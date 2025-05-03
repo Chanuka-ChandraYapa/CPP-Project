@@ -5,7 +5,7 @@
 #include <algorithm>
 
 ContainmentField::ContainmentField(const Config& config)
-    : size(config.field_size), fieldStrength(config.initial_strength), decayRate(config.initial_decay_rate), GRID_SIZE(config.field_grid_size), fieldEnergy(0.0) {
+    : size(config.field_size), fieldStrength(config.initial_strength), decayRate(config.initial_decay_rate), GRID_SIZE(config.field_grid_size), fieldEnergy(0.0), forceStrength(config.force_strength) {
     initializeField();
 }
 
@@ -30,13 +30,13 @@ double ContainmentField::getContainmentForce(const Particle& particle) const {
     double minDistToEdge = std::min(halfSize - std::abs(x), halfSize - std::abs(y));
 
     // Ensure minDistToEdge is not negative due to floating point issues if x/y are extremely close to halfSize
-    minDistToEdge = std::max(0.0, minDistToEdge);
+    minDistToEdge = minDistToEdge;
 
     // Calculate the force magnitude
-    double forceMagnitude = fieldStrength * (1.0 - minDistToEdge / halfSize);
+    double forceMagnitude = forceStrength * fieldStrength * (minDistToEdge / halfSize);
 
     // Clamp the force to be non-negative just in case
-    return std::max(0.0, forceMagnitude);
+    return forceMagnitude;
 }
 
 bool ContainmentField::isParticleContained(const Particle& particle) const {

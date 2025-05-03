@@ -60,6 +60,7 @@ Config loadConfig(const std::string& filename) {
     cfg.initial_strength = get_nested_or_throw(j, "containment_field", "initial_strength");
     cfg.initial_decay_rate = get_nested_or_throw(j, "containment_field", "initial_decay_rate");
     cfg.field_grid_size = get_nested_or_throw(j, "containment_field", "grid_size");
+    cfg.force_strength = get_nested_or_throw(j, "containment_field", "force_strength");
 
     // Load Rendering settings
     cfg.target_fps = get_nested_or_throw(j, "rendering", "target_fps");
