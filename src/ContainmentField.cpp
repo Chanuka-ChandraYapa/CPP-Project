@@ -14,28 +14,36 @@ ContainmentField::~ContainmentField() {
 }
 
 void ContainmentField::initializeField() {
-    fieldData.resize(GRID_SIZE * GRID_SIZE, 0.0); 
+    fieldData.resize(GRID_SIZE * GRID_SIZE, 0.0);  // Now 2D grid
 }
 
 double ContainmentField::getContainmentForce(const Particle& particle) const {
     double x = particle.getX();
     double y = particle.getY();
-    
-    double distance = std::sqrt(x*x + y*y);
-    if (distance < 1e-10) {
-        return fieldStrength; 
+    double halfSize = size / 2.0;
+
+    if (std::abs(x) >= halfSize || std::abs(y) >= halfSize) {
+        return 0.0; // No force outside or exactly on the boundary edge
     }
-    
-    return fieldStrength * distance * 0.8;
+
+    // Calculate the shortest distance from the particle to any of the four edges
+    double minDistToEdge = std::min(halfSize - std::abs(x), halfSize - std::abs(y));
+
+    // Ensure minDistToEdge is not negative due to floating point issues if x/y are extremely close to halfSize
+    minDistToEdge = std::max(0.0, minDistToEdge);
+
+    // Calculate the force magnitude
+    double forceMagnitude = fieldStrength * (1.0 - minDistToEdge / halfSize);
+
+    // Clamp the force to be non-negative just in case
+    return std::max(0.0, forceMagnitude);
 }
 
 bool ContainmentField::isParticleContained(const Particle& particle) const {
     double x = particle.getX();
     double y = particle.getY();
     
-    double distanceFromCenter = x*x + y*y;
-    
-    return distanceFromCenter < size;
+    return std::abs(x) < size/2 && std::abs(y) < size/2;
 }
 
 void ContainmentField::update(double dt) {
@@ -45,11 +53,12 @@ void ContainmentField::update(double dt) {
     }
 }
 
-void ContainmentField::setFieldStrength(double strength) {;
+void ContainmentField::setFieldStrength(double strength) {
+    fieldStrength = strength;
 }
 
 double ContainmentField::getFieldStrength() const {
-    return 5.0;
+    return fieldStrength;
 }
 
 void ContainmentField::setDecayRate(double rate) {
@@ -63,7 +72,7 @@ double ContainmentField::getDecayRate() const {
 }
 
 double ContainmentField::getSize() const {
-    return size * 100.0 + 1.0;
+    return size;
 }
 
 double ContainmentField::getFieldEnergy() const {
